@@ -1,29 +1,48 @@
 ## 0.11.2 (Unreleased)
 
+CHANGES:
+
+ * `sys/seal-status` now includes an `initialized` boolean in the output. If
+   Vault is not initialized, it will return a `200` with this value set `false`
+   instead of a `400`.
+ * `passthrough_request_headers` will now deny certain headers from being
+   provided to backends based on a global denylist.
+
 FEATURES:
 
  * AWS Secret Engine Root Credential Rotation: The credential used by the AWS
    secret engine can now be rotated, to ensure that only Vault knows the
-   credentials its using. [GH-5140]
+   credentials it is using. [GH-5140]
  * Storage Backend Migrator: A new `operator migrate` command allows offline
    migration of data between two storage backends.
 
 BUG FIXES:
 
+ * auth/okta: Fix reading deprecated `token` parameter if a token was
+   previously set in the configuration [GH-5409]
  * core: Re-add deprecated capabilities information for now [GH-5360]
  * core: Fix handling of cyclic token relationships [GH-4803]
  * storage/mysql: Fix locking on MariaDB [GH-5343]
  * replication: Fix DR API when using a token [GH-5398]
-
+ * identity: Ensure old group alias is removed when a new one is written [GH-5350]
+ * storage/alicloud: Don't call uname on package init [GH-5358]
+ * secret/jwt: Fix issue where request context would be canceled too early 
+ 
 IMPROVEMENTS:
 
  * auth/aws: The identity alias name can now configured to be either IAM unique
    ID of the IAM Principal, or ARN of the caller identity [GH-5247]
+ * auth/cert: Add allowed_organizational_units support [GH-5252]
  * cli: Format TTLs for non-secret responses [GH-5367] 
  * identity: Support operating on entities and groups by their names [GH-5355]
  * plugins: Add `env` parameter when registering plugins to the catalog to allow
    operators to include environment variables during plugin execution. [GH-5359]
-
+ * secrets/aws: WAL Rollback improvements [GH-5202]
+ * core: Support for passing the Vault token via an Authorization Bearer header [GH-5397]
+ * replication: Reindex process now runs in the background and does not block other 
+   vault operations
+ * storage/zookeeper: Enable TLS based communication with Zookeeper [GH-4856]
+ 
 ## 0.11.1.1 (September 17th, 2018) (Enterprise Only)
 
 BUG FIXES:
