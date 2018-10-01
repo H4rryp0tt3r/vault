@@ -214,8 +214,6 @@ func (i *IdentityStore) handleEntityUpdateCommon() framework.OperationFunc {
 
 		if entityName != "" {
 			entity.Name = entityName
-			// Duplicate the name provided over the API as NameRaw
-			entity.NameRaw = entityName
 		}
 
 		// Update the policies if supplied
@@ -332,8 +330,7 @@ func (i *IdentityStore) handleEntityReadCommon(ctx context.Context, entity *iden
 
 	respData := map[string]interface{}{}
 	respData["id"] = entity.ID
-	// Case sensitive name
-	respData["name"] = entity.NameRaw
+	respData["name"] = entity.Name
 	respData["metadata"] = entity.Metadata
 	respData["merged_entity_ids"] = entity.MergedEntityIDs
 	respData["policies"] = entity.Policies
@@ -562,7 +559,7 @@ func (i *IdentityStore) handlePathEntityListCommon(ctx context.Context, req *log
 		if byID {
 			keys = append(keys, entity.ID)
 		} else {
-			keys = append(keys, entity.NameRaw)
+			keys = append(keys, entity.Name)
 		}
 		entityInfoEntry := map[string]interface{}{
 			"name": entity.Name,

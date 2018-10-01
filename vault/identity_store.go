@@ -36,7 +36,7 @@ func NewIdentityStore(ctx context.Context, core *Core, config *logical.BackendCo
 	var err error
 
 	// Create a new in-memory database for the identity store
-	db, err := memdb.NewMemDB(identityStoreSchema())
+	db, err := memdb.NewMemDB(identityStoreSchema(!core.disableCaseInsensitiveIdentityNames))
 	if err != nil {
 		return nil, errwrap.Wrapf("failed to create memdb for identity store: {{err}}", err)
 	}
@@ -311,16 +311,6 @@ func (i *IdentityStore) parseEntityFromBucketItem(ctx context.Context, item *sto
 		entity.NamespaceID = namespace.RootNamespaceID
 	}
 
-	if entity.Name != "" && entity.NameRaw == "" {
-		entity.NameRaw = entity.Name
-	}
-
-	for _, alias := range entity.Aliases {
-		if alias.Name != "" && alias.NameRaw == "" {
-			alias.NameRaw = alias.Name
-		}
-	}
-
 	if persistNeeded && !i.core.ReplicationState().HasState(consts.ReplicationPerformanceSecondary) {
 		entityAsAny, err := ptypes.MarshalAny(&entity)
 		if err != nil {
@@ -355,14 +345,6 @@ func (i *IdentityStore) parseGroupFromBucketItem(item *storagepacker.Item) (*ide
 
 	if group.NamespaceID == "" {
 		group.NamespaceID = namespace.RootNamespaceID
-	}
-
-	if group.Name != "" && group.NameRaw == "" {
-		group.NameRaw = group.Name
-	}
-
-	if group.Alias != nil && group.Alias.Name != "" && group.Alias.NameRaw == "" {
-		group.Alias.NameRaw = group.Alias.Name
 	}
 
 	return &group, nil
@@ -473,7 +455,6 @@ func (i *IdentityStore) CreateOrFetchEntity(ctx context.Context, alias *logical.
 	newAlias := &identity.Alias{
 		CanonicalID:   entity.ID,
 		Name:          alias.Name,
-		NameRaw:       alias.Name,
 		MountAccessor: alias.MountAccessor,
 		Metadata:      alias.Metadata,
 		MountPath:     mountValidationResp.MountPath,

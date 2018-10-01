@@ -225,7 +225,6 @@ func (i *IdentityStore) handleGroupUpdateCommon(ctx context.Context, req *logica
 			return logical.ErrorResponse("group name is already in use"), nil
 		}
 		group.Name = groupName
-		group.NameRaw = groupName
 	}
 
 	metadata, ok, err := d.GetOkErr("metadata")
@@ -327,8 +326,7 @@ func (i *IdentityStore) handleGroupReadCommon(ctx context.Context, group *identi
 
 	respData := map[string]interface{}{}
 	respData["id"] = group.ID
-	// Case sensitive name
-	respData["name"] = group.NameRaw
+	respData["name"] = group.Name
 	respData["policies"] = group.Policies
 	respData["member_entity_ids"] = group.MemberEntityIDs
 	respData["parent_group_ids"] = group.ParentGroupIDs
@@ -498,7 +496,7 @@ func (i *IdentityStore) handleGroupListCommon(ctx context.Context, byID bool) (*
 		if byID {
 			keys = append(keys, group.ID)
 		} else {
-			keys = append(keys, group.NameRaw)
+			keys = append(keys, group.Name)
 		}
 
 		groupInfoEntry := map[string]interface{}{

@@ -82,7 +82,7 @@ func (i *IdentityStore) loadGroups(ctx context.Context) error {
 				return fmt.Errorf(`duplicate group names %q and %q;
 identity names are treated case insensitively unless
 'disable_case_insensitive_identity_names' config is set`,
-					group.NameRaw, groupByName.NameRaw)
+					group.Name, groupByName.Name)
 			}
 
 			if i.logger.IsDebug() {
@@ -215,7 +215,7 @@ func (i *IdentityStore) loadEntities(ctx context.Context) error {
 					return fmt.Errorf(`duplicate entity names %q and %q;
 identity names are treated case insensitively unless
 'disable_case_insensitive_identity_names' config is set`,
-						entity.NameRaw, entityByName.NameRaw)
+						entity.Name, entityByName.Name)
 				}
 
 				// Only update MemDB and don't hit the storage again
@@ -281,7 +281,7 @@ func (i *IdentityStore) upsertEntityInTxn(ctx context.Context, txn *memdb.Txn, e
 			return fmt.Errorf(`duplicate alias factors name=%q mount_accessor=%q for entity name %q;
 identity names are treated case insensitively unless
 'disable_case_insensitive_identity_names' config is set`,
-				alias.NameRaw, alias.MountAccessor, entity.NameRaw)
+				alias.Name, alias.MountAccessor, entity.Name)
 		}
 
 		// Insert or update alias in MemDB using the transaction created above
@@ -392,8 +392,6 @@ func (i *IdentityStore) MemDBUpsertAliasInTxn(txn *memdb.Txn, alias *identity.Al
 		}
 	}
 
-	alias.Name = i.sanitizeName(alias.Name)
-
 	if err := txn.Insert(tableName, alias); err != nil {
 		return errwrap.Wrapf("failed to update alias into memdb: {{err}}", err)
 	}
@@ -456,8 +454,6 @@ func (i *IdentityStore) MemDBAliasByFactors(mountAccessor, aliasName string, clo
 	}
 
 	txn := i.db.Txn(false)
-
-	aliasName = i.sanitizeName(aliasName)
 
 	return i.MemDBAliasByFactorsInTxn(txn, mountAccessor, aliasName, clone, groupAlias)
 }
@@ -559,8 +555,6 @@ func (i *IdentityStore) MemDBUpsertEntityInTxn(txn *memdb.Txn, entity *identity.
 		return fmt.Errorf("entity is nil")
 	}
 
-	entity.Name = i.sanitizeName(entity.Name)
-
 	if entity.NamespaceID == "" {
 		entity.NamespaceID = namespace.RootNamespaceID
 	}
@@ -638,8 +632,6 @@ func (i *IdentityStore) MemDBEntityByNameInTxn(ctx context.Context, txn *memdb.T
 	if entityName == "" {
 		return nil, fmt.Errorf("missing entity name")
 	}
-
-	entityName = i.sanitizeName(entityName)
 
 	ns, err := namespace.FromContext(ctx)
 	if err != nil {
@@ -885,7 +877,6 @@ func (i *IdentityStore) sanitizeEntity(ctx context.Context, entity *identity.Ent
 		if err != nil {
 			return fmt.Errorf("failed to generate entity name")
 		}
-		entity.NameRaw = entity.Name
 	}
 
 	// Entity metadata should always be map[string]string
@@ -950,7 +941,6 @@ func (i *IdentityStore) sanitizeAndUpsertGroup(ctx context.Context, group *ident
 		if err != nil {
 			return fmt.Errorf("failed to generate group name")
 		}
-		group.NameRaw = group.Name
 	}
 
 	// Entity metadata should always be map[string]string
@@ -1150,8 +1140,6 @@ func (i *IdentityStore) MemDBGroupByNameInTxn(ctx context.Context, txn *memdb.Tx
 		return nil, fmt.Errorf("txn is nil")
 	}
 
-	groupName = i.sanitizeName(groupName)
-
 	ns, err := namespace.FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -1262,8 +1250,6 @@ func (i *IdentityStore) MemDBUpsertGroupInTxn(txn *memdb.Txn, group *identity.Gr
 	if group == nil {
 		return fmt.Errorf("group is nil")
 	}
-
-	group.Name = i.sanitizeName(group.Name)
 
 	if group.NamespaceID == "" {
 		group.NamespaceID = namespace.RootNamespaceID
@@ -1855,8 +1841,7 @@ func (i *IdentityStore) handleAliasListCommon(ctx context.Context, groupAlias bo
 		alias := raw.(*identity.Alias)
 		aliasIDs = append(aliasIDs, alias.ID)
 		aliasInfoEntry := map[string]interface{}{
-			// Case sensitive name
-			"name":           alias.NameRaw,
+			"name":           alias.Name,
 			"canonical_id":   alias.CanonicalID,
 			"mount_accessor": alias.MountAccessor,
 		}

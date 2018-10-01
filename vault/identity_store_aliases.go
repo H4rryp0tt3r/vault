@@ -138,7 +138,6 @@ func (i *IdentityStore) handleAliasUpdateCommon() framework.OperationFunc {
 			}
 		} else {
 			alias.Name = aliasName
-			alias.NameRaw = aliasName
 		}
 
 		// Get mount accessor
@@ -312,8 +311,7 @@ func (i *IdentityStore) handleAliasReadCommon(ctx context.Context, alias *identi
 	respData["canonical_id"] = alias.CanonicalID
 	respData["mount_accessor"] = alias.MountAccessor
 	respData["metadata"] = alias.Metadata
-	// Case sensitive name
-	respData["name"] = alias.NameRaw
+	respData["name"] = alias.Name
 	respData["merged_from_canonical_ids"] = alias.MergedFromCanonicalIDs
 
 	if mountValidationResp := i.core.router.validateMountByAccessor(alias.MountAccessor); mountValidationResp != nil {
