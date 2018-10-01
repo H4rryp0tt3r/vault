@@ -61,9 +61,6 @@ message Group {
 	// belongs to. Do not return this value over the API when reading the
 	// group.
 	string namespace_id = 13;
-
-	// NameRaw is the replica of the Name field with its casing preseverd
-	string name_raw = 14;
 }
 
 // Entity represents an entity that gets persisted and indexed.
@@ -128,9 +125,6 @@ message Entity {
 	// belongs to. Do not return this value over the API when reading the
 	// entity.
 	string namespace_id = 12;
-
-	// NameRaw is the replica of the Name field with its casing preseverd
-	string name_raw = 13;
 }
 
 // Alias represents the alias that gets stored inside of the
@@ -182,9 +176,6 @@ message Alias {
 	// NamespaceID is the identifier of the namespace to which this alias
 	// belongs.
 	string namespace_id = 11;
-
-	// NameRaw is the replica of the Name field with its casing preserved
-	string name_raw = 12;
 }
 
 // Deprecated. Retained for backwards compatibility.
